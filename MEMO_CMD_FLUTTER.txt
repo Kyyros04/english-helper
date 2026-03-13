@@ -1,0 +1,31 @@
+STRUTTURA DEL PROGETTO (Le cartelle che contano)
+lib/: Il cuore dell'app. Qui scrivi il codice Dart.
+main.dart: Punto di ingresso (il "motore" che avvia l'app).
+models/: Qui metti le classi dati.
+screens/: Qui metti le pagine intere.
+android/, ios/, web/: Progetti nativi generati da Flutter. Non toccarli quasi mai, servono solo per configurazioni specifiche (come icone o permessi).
+assets/: Cartella creata da te per immagini, icone e font.
+pubspec.yaml: La "lista della spesa". Qui aggiungi le librerie esterne e dichiari i file multimediali (assets).
+build/: Cartella temporanea dove Flutter compila l'app. Se l'app dà errori strani, cancellala con flutter clean.
+
+COMANDI DA TERMINALE (I "Must-Have")
+1. Gestione Progetto & Dipendenze
+flutter doctor: Controlla se l'ambiente di sviluppo è configurato bene.
+flutter pub get: Scarica le librerie aggiunte nel pubspec.yaml.
+flutter pub upgrade: Aggiorna le librerie alle versioni più recenti compatibili.
+flutter clean: Cancella la cartella di build (utile se l'app "impazzisce" o non si aggiorna).
+2. Sviluppo & Debug
+flutter run: Avvia l'app sul dispositivo collegato (o Chrome).
+flutter devices: Elenca i telefoni o emulatori connessi al PC.
+taskkill /F /IM java.exe: (Solo Windows) Chiude i processi Java bloccati che impediscono la build.
+3. Icone & Personalizzazione
+flutter pub run flutter_launcher_icons: Prende l'immagine dal percorso indicato nel pubspec.yaml e genera tutte le icone per Android.
+4. Creazione dell'App (Build Finale)
+flutter build apk --split-per-abi: Genera i file .apk pronti per essere installati sul telefono.
+Nota: Il file più comune per i telefoni moderni è app-arm64-v8a-release.apk.
+flutter build apk --no-lint: Salta i controlli formali se la build normale si blocca per file "in uso da altri processi".
+
+TRUCCHI RAPIDI (Cheat Sheet)
+Hot Reload (r): Carica le modifiche grafiche quasi istantaneamente senza riavviare l'app.
+Hot Restart (R): Riavvia completamente la logica dell'app (necessario se modifichi initState o file JSON).
+Developer Mode: Deve essere sempre attivo su Windows per permettere a Flutter di compilare correttamente.
