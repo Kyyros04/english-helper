@@ -6,13 +6,9 @@ import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import '../models/word_model.dart';
 import 'package:app_links/app_links.dart';
-
-final GlobalKey<GlossaryScreenState> glossaryKey =
-    GlobalKey<GlossaryScreenState>();
+import 'screens/quick_add_screen.dart';
 
 final GlobalKey<NavigatorState> navKey = GlobalKey<NavigatorState>();
-
-final GlobalKey<MainNavigatorState> mainNavKey = GlobalKey<MainNavigatorState>();
 
 
 void main() async {
@@ -36,31 +32,18 @@ void main() async {
 
 void _handleDeepLink(Uri uri) {
   if (uri.scheme == 'englishhelper' && uri.host == 'add') {
-    
-    // 1. Aspetta un tempo sufficiente affinché il motore grafico sia pronto
-    Future.delayed(const Duration(milliseconds: 800), () {
-      
-      // 2. Se l'app è già aperta, pulisci le rotte sovrapposte
-      if (navKey.currentContext != null) {
-        Navigator.of(navKey.currentContext!).popUntil((route) => route.isFirst);
+    // Usiamo il delay per dare tempo ad Android di portare l'app in primo piano
+    Future.delayed(const Duration(milliseconds: 400), () {
+      if (navKey.currentState != null) {
+        // Pulisce lo stack e mette la QuickAddScreen in cima
+        navKey.currentState!.pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const QuickAddScreen()),
+          (route) => route.isFirst,
+        );
       }
-
-      // 3. Forza la Tab del glossario
-      mainNavKey.currentState?.setTab(0); 
-
-      // 4. USIAMO UN MICRO-DELAY PER IL DIALOGO
-      // Questo garantisce che GlossaryScreen sia disegnata e la chiave sia agganciata
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Future.delayed(const Duration(milliseconds: 300), () {
-          if (glossaryKey.currentState != null) {
-            glossaryKey.currentState!.showAddWordDialog();
-          }
-        });
-      });
     });
   }
 }
-
 
 
 class EnglishHelperApp extends StatelessWidget {
@@ -71,7 +54,7 @@ class EnglishHelperApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: navKey,
       theme: ThemeData(colorSchemeSeed: Colors.blue, useMaterial3: true),
-      home: MainNavigator(key: mainNavKey),
+      home: MainNavigator(),
     );
   }
 }
@@ -97,7 +80,7 @@ class MainNavigatorState extends State<MainNavigator> {
 
 
   final List<Widget> screens = [
-    GlossaryScreen(key: glossaryKey),
+    GlossaryScreen(),
     const Center(child: Text("Phrasal Verbs Coming Soon")),
     const OptionsScreen(),
   ];
