@@ -117,8 +117,8 @@ class GlossaryScreenState extends State<GlossaryScreen> {
     }).toList();
 
     final totalCount = words.length;
-final learnedCount = words.where((w) => w.isLearned).length;
-final toLearnCount = totalCount - learnedCount;
+    final learnedCount = words.where((w) => w.isLearned).length;
+    final toLearnCount = totalCount - learnedCount;
 
     Color backgroundColor;
     switch (filterMode) {
@@ -198,137 +198,136 @@ final toLearnCount = totalCount - learnedCount;
           ),
           Expanded(
             child: Container(
-              color: backgroundColor.withAlpha(40), 
-              child: Material( // Aggiungi questo per forzare la trasparenza
-      color: Colors.transparent,
-              child: ListView.builder(
-                itemCount: filteredWords.length,
-                itemBuilder: (context, index) {
-                  final word = filteredWords[index];
-                  return ExpansionTile(
-                    backgroundColor: Colors.transparent,
-                    collapsedBackgroundColor: Colors.transparent,
-                    title: Text(
-                      word.term,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: word.isLearned
-                            ? Colors.green.shade700
-                            : Colors.deepOrange,
-                      ),
-                    ),
-
-                    subtitle: Text(word.description),
-
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 8.0,
+              color: backgroundColor.withAlpha(40),
+              child: Material(
+                // Aggiungi questo per forzare la trasparenza
+                color: Colors.transparent,
+                child: ListView.builder(
+                  itemCount: filteredWords.length,
+                  itemBuilder: (context, index) {
+                    final word = filteredWords[index];
+                    return ExpansionTile(
+                      backgroundColor: Colors.transparent,
+                      collapsedBackgroundColor: Colors.transparent,
+                      title: Text(
+                        word.term,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: word.isLearned
+                              ? Colors.green.shade700
+                              : Colors.deepOrange,
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Translation (IT): ${word.translation}",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
+                      ),
 
-                            const Text(
-                              "Examples:",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            const Divider(),
+                      subtitle: Text(word.description),
 
-                            ...word.examples.map(
-                              (ex) => Padding(
-                                padding: const EdgeInsets.only(bottom: 4.0),
-                                child: Text(
-                                  "• $ex",
-                                  style: const TextStyle(
-                                    fontStyle: FontStyle.italic,
-                                  ),
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 8.0,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Translation (IT): ${word.translation}",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
                                 ),
                               ),
-                            ),
+                              const SizedBox(height: 10),
 
-                            const Divider(),
+                              const Text(
+                                "Examples:",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              const Divider(),
 
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton.icon(
-                                  onPressed: () {
-                                    setState(() {
-                                      word.isLearned =
-                                          !word.isLearned; // Inverte lo stato
-                                      saveToFile(
-                                        words,
-                                      ); // Salva subito sul JSON
-                                    });
-                                  },
-                                  icon: Icon(
-                                    word.isLearned
-                                        ? Icons.check_circle
-                                        : Icons.radio_button_unchecked,
-                                    color: word.isLearned
-                                        ? Colors.green
-                                        : Colors.grey,
-                                  ),
-                                  label: Text(
-                                    word.isLearned ? "Learned" : "To Learn",
-                                    style: TextStyle(
-                                      color: word.isLearned
-                                          ? Colors.green
-                                          : Colors.grey,
-                                      fontWeight: word.isLearned
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
+                              ...word.examples.map(
+                                (ex) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 4.0),
+                                  child: Text(
+                                    "• $ex",
+                                    style: const TextStyle(
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                TextButton.icon(
-                                  onPressed: () => showAddWordDialog(
-                                    word: word,
-                                    index: index,
+                              ),
+
+                              const Divider(),
+
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  TextButton.icon(
+                                    onPressed: () {
+                                      setState(() {
+                                        word.isLearned =
+                                            !word.isLearned; // Inverte lo stato
+                                        saveToFile(
+                                          words,
+                                        ); // Salva subito sul JSON
+                                      });
+                                    },
+                                    icon: Icon(
+                                      word.isLearned
+                                          ? Icons.check_circle
+                                          : Icons.radio_button_unchecked,
+                                      color: word.isLearned
+                                          ? Colors.green
+                                          : Colors.grey,
+                                    ),
+                                    label: Text(
+                                      word.isLearned ? "Learned" : "To Learn",
+                                      style: TextStyle(
+                                        color: word.isLearned
+                                            ? Colors.green
+                                            : Colors.grey,
+                                        fontWeight: word.isLearned
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
                                   ),
-                                  icon: const Icon(
-                                    Icons.edit_outlined,
-                                    color: Colors.blue,
+                                  const SizedBox(width: 8),
+                                  TextButton.icon(
+                                    onPressed: () =>
+                                        showAddWordDialog(word: word),
+                                    icon: const Icon(
+                                      Icons.edit_outlined,
+                                      color: Colors.blue,
+                                    ),
+                                    label: const Text(
+                                      "Edit",
+                                      style: TextStyle(color: Colors.blue),
+                                    ),
                                   ),
-                                  label: const Text(
-                                    "Edit",
-                                    style: TextStyle(color: Colors.blue),
+                                  const SizedBox(width: 8),
+                                  TextButton.icon(
+                                    onPressed: () => _confirmDelete(word),
+                                    icon: const Icon(
+                                      Icons.delete_outline,
+                                      color: Colors.red,
+                                    ),
+                                    label: const Text(
+                                      "Delete",
+                                      style: TextStyle(color: Colors.red),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                TextButton.icon(
-                                  onPressed: () => _confirmDelete(index),
-                                  icon: const Icon(
-                                    Icons.delete_outline,
-                                    color: Colors.red,
-                                  ),
-                                  label: const Text(
-                                    "Delete",
-                                    style: TextStyle(color: Colors.red),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  );
-                },
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
-          ),
           ),
         ],
       ),
@@ -339,7 +338,7 @@ final toLearnCount = totalCount - learnedCount;
     );
   }
 
-  void showAddWordDialog({Word? word, int? index}) {
+  void showAddWordDialog({Word? word}) {
     final termController = TextEditingController(text: word?.term ?? "");
     final transController = TextEditingController(
       text: word?.translation ?? "",
@@ -389,9 +388,11 @@ final toLearnCount = totalCount - learnedCount;
             onPressed: () {
               if (termController.text.isNotEmpty) {
                 final newWord = Word(
+                  id: word?.id,
                   term: termController.text,
                   translation: transController.text,
                   description: descController.text,
+                  isLearned: word?.isLearned ?? false,
                   examples: exController.text
                       .split('+')
                       .map((e) => e.trim())
@@ -400,10 +401,13 @@ final toLearnCount = totalCount - learnedCount;
                 );
 
                 setState(() {
-                  if (index == null) {
+                  if (word == null) {
                     words.add(newWord);
                   } else {
-                    words[index] = newWord;
+                    int globalIndex = words.indexWhere((w) => w.id == word!.id);
+                    if (globalIndex != -1) {
+                      words[globalIndex] = newWord;
+                    }
                   }
                   words.sort(
                     (a, b) =>
@@ -421,14 +425,12 @@ final toLearnCount = totalCount - learnedCount;
     );
   }
 
-  void _confirmDelete(int index) {
+  void _confirmDelete(Word word) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Delete Word?"),
-        content: Text(
-          "Are you sure you want to remove '${words[index].term}'?",
-        ),
+        content: Text("Are you sure you want to remove '${word.term}'?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -441,7 +443,7 @@ final toLearnCount = totalCount - learnedCount;
             ),
             onPressed: () {
               setState(() {
-                words.removeAt(index);
+                words.removeWhere((w) => w.id == word.id);
                 saveToFile(words);
               });
               Navigator.pop(context);
