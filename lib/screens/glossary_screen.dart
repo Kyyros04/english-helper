@@ -91,6 +91,7 @@ class GlossaryScreenState extends State<GlossaryScreen> {
     }).toList();
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Column(
         children: [
           Padding(

@@ -5,38 +5,62 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import '../models/word_model.dart';
-
-import 'package:quick_actions/quick_actions.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:app_links/app_links.dart';
 
 final GlobalKey<GlossaryScreenState> glossaryKey =
     GlobalKey<GlossaryScreenState>();
 
-void main() {
-  runApp(const EnglishHelperApp());
+final GlobalKey<NavigatorState> navKey = GlobalKey<NavigatorState>();
 
-  // Inizializza le azioni rapide
-  const QuickActions quickActions = QuickActions();
+final GlobalKey<MainNavigatorState> mainNavKey = GlobalKey<MainNavigatorState>();
+
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   
-  // Crea il tasto che apparirà tenendo premuto sull'icona
-  quickActions.setShortcutItems(<ShortcutItem>[
-    const ShortcutItem(
-      type: 'action_add_word', 
-      localizedTitle: 'Aggiungi Parola', 
-      icon: 'launcher_icon' // Usa l'icona che hai già
-    ),
-  ]);
+  final appLinks = AppLinks();
 
-  // Gestisci il click
-  quickActions.initialize((shortcutType) {
-    if (shortcutType == 'action_add_word') {
-      // Aspetta che l'app sia pronta e apri il tuo dialogo
-      Future.delayed(const Duration(milliseconds: 800), () {
-        glossaryKey.currentState?.showAddWordDialog();
-      });
-    }
+  // 1. Gestione all'avvio (Cold Start)
+  final Uri? initialUri = await appLinks.getInitialLink();
+  if (initialUri != null) {
+    _handleDeepLink(initialUri);
+  }
+
+  // 2. Gestione ad app già aperta (Background/Foreground)
+  appLinks.uriLinkStream.listen((uri) {
+    _handleDeepLink(uri);
   });
+
+  runApp(const EnglishHelperApp());
 }
+
+void _handleDeepLink(Uri uri) {
+  if (uri.scheme == 'englishhelper' && uri.host == 'add') {
+    
+    // 1. Aspetta un tempo sufficiente affinché il motore grafico sia pronto
+    Future.delayed(const Duration(milliseconds: 800), () {
+      
+      // 2. Se l'app è già aperta, pulisci le rotte sovrapposte
+      if (navKey.currentContext != null) {
+        Navigator.of(navKey.currentContext!).popUntil((route) => route.isFirst);
+      }
+
+      // 3. Forza la Tab del glossario
+      mainNavKey.currentState?.setTab(0); 
+
+      // 4. USIAMO UN MICRO-DELAY PER IL DIALOGO
+      // Questo garantisce che GlossaryScreen sia disegnata e la chiave sia agganciata
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (glossaryKey.currentState != null) {
+            glossaryKey.currentState!.showAddWordDialog();
+          }
+        });
+      });
+    });
+  }
+}
+
 
 
 class EnglishHelperApp extends StatelessWidget {
@@ -45,8 +69,9 @@ class EnglishHelperApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navKey,
       theme: ThemeData(colorSchemeSeed: Colors.blue, useMaterial3: true),
-      home: const MainNavigator(),
+      home: MainNavigator(key: mainNavKey),
     );
   }
 }
@@ -55,11 +80,17 @@ class MainNavigator extends StatefulWidget {
   const MainNavigator({super.key});
 
   @override
-  State<MainNavigator> createState() => _MainNavigatorState();
+  State<MainNavigator> createState() => MainNavigatorState();
 }
 
-class _MainNavigatorState extends State<MainNavigator> {
+class MainNavigatorState extends State<MainNavigator> {
   int _currentIndex = 0;
+
+  void setTab(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
