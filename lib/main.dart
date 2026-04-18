@@ -6,7 +6,38 @@ import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import '../models/word_model.dart';
 
-void main() => runApp(const EnglishHelperApp());
+import 'package:quick_actions/quick_actions.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+final GlobalKey<GlossaryScreenState> glossaryKey =
+    GlobalKey<GlossaryScreenState>();
+
+void main() {
+  runApp(const EnglishHelperApp());
+
+  // Inizializza le azioni rapide
+  const QuickActions quickActions = QuickActions();
+  
+  // Crea il tasto che apparirà tenendo premuto sull'icona
+  quickActions.setShortcutItems(<ShortcutItem>[
+    const ShortcutItem(
+      type: 'action_add_word', 
+      localizedTitle: 'Aggiungi Parola', 
+      icon: 'launcher_icon' // Usa l'icona che hai già
+    ),
+  ]);
+
+  // Gestisci il click
+  quickActions.initialize((shortcutType) {
+    if (shortcutType == 'action_add_word') {
+      // Aspetta che l'app sia pronta e apri il tuo dialogo
+      Future.delayed(const Duration(milliseconds: 800), () {
+        glossaryKey.currentState?.showAddWordDialog();
+      });
+    }
+  });
+}
+
 
 class EnglishHelperApp extends StatelessWidget {
   const EnglishHelperApp({super.key});
@@ -30,17 +61,19 @@ class MainNavigator extends StatefulWidget {
 class _MainNavigatorState extends State<MainNavigator> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    const GlossaryScreen(),
+  @override
+  Widget build(BuildContext context) {
+
+
+  final List<Widget> screens = [
+    GlossaryScreen(key: glossaryKey),
     const Center(child: Text("Phrasal Verbs Coming Soon")),
     const OptionsScreen(),
   ];
 
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("English Helper")),
-      body: _screens[_currentIndex],
+      body: screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),

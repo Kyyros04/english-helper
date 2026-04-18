@@ -24,3 +24,13 @@ plugins {
 }
 
 include(":app")
+
+gradle.lifecycle.beforeProject {
+    if (name == "quick_settings") {
+        plugins.withType<com.android.build.gradle.LibraryPlugin> {
+            extensions.configure<com.android.build.gradle.LibraryExtension> {
+                namespace = "io.apparence.quick_settings"
+            }
+        }
+    }
+}

@@ -7,13 +7,13 @@ import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
 
 class GlossaryScreen extends StatefulWidget {
-  const GlossaryScreen({super.key});
+  const GlossaryScreen({Key? key}) : super(key: key); 
 
   @override
-  State<GlossaryScreen> createState() => _GlossaryScreenState();
+  State<GlossaryScreen> createState() => GlossaryScreenState();
 }
 
-class _GlossaryScreenState extends State<GlossaryScreen> {
+class GlossaryScreenState extends State<GlossaryScreen> {
   String searchQuery = "";
   final searchController = TextEditingController();
 
@@ -178,7 +178,7 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               TextButton.icon(
-                                onPressed: () => _showAddWordDialog(
+                                onPressed: () => showAddWordDialog(
                                   word: word,
                                   index: index,
                                 ), // Passiamo i dati
@@ -216,13 +216,13 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddWordDialog,
+        onPressed: showAddWordDialog,
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  void _showAddWordDialog({Word? word, int? index}) {
+  void showAddWordDialog({Word? word, int? index}) {
     final termController = TextEditingController(text: word?.term ?? "");
     final transController = TextEditingController(
       text: word?.translation ?? "",

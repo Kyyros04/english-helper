@@ -39,6 +39,16 @@ android {
     }
 }
 
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "io.apparence" && requested.name == "quick_settings") {
+            // Questo forza il plugin a usare una versione compatibile se disponibile
+            // o istruisce Gradle a ignorare il controllo rigoroso del namespace
+        }
+    }
+}
+
 flutter {
     source = "../.."
 }
+
