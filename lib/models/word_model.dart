@@ -3,12 +3,14 @@ class Word {
   final String translation; // La traduzione in italiano
   final String description;
   final List<String> examples; // Lista di frasi
+  bool isLearned;
 
   Word({
     required this.term, 
     required this.translation, 
     required this.description, 
-    required this.examples
+    required this.examples,
+    this.isLearned = false,
   });
 
   Map<String, dynamic> toMap() => {
@@ -16,6 +18,7 @@ class Word {
     'translation': translation,
     'description': description,
     'examples': examples,
+    'isLearned': isLearned,
   };
 
   factory Word.fromMap(Map<String, dynamic> map) => Word(
@@ -23,5 +26,6 @@ class Word {
     translation: map['translation'] ?? '',
     description: map['description'] ?? '',
     examples: List<String>.from(map['examples'] ?? []),
+    isLearned: map['isLearned'] ?? false,
   );
 }

@@ -81,19 +81,18 @@ class MainNavigatorState extends State<MainNavigator> {
 
   final List<Widget> screens = [
     GlossaryScreen(),
-    const Center(child: Text("Phrasal Verbs Coming Soon")),
     const OptionsScreen(),
   ];
 
     return Scaffold(
       appBar: AppBar(title: const Text("English Helper")),
+      //backgroundColor: Colors.transparent,
       body: screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.book), label: "Glossary"),
-          BottomNavigationBarItem(icon: Icon(Icons.bolt), label: "Phrasals"),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Options"),
         ],
       ),

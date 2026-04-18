@@ -5,15 +5,20 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
+import '../widgets/filter_chip_widget.dart';
+import '../helpers/helper.dart' show formatCount;
+
+enum WordFilter { all, learned, toLearn }
 
 class GlossaryScreen extends StatefulWidget {
-  const GlossaryScreen({super.key}); 
+  const GlossaryScreen({super.key});
 
   @override
   State<GlossaryScreen> createState() => GlossaryScreenState();
 }
 
 class GlossaryScreenState extends State<GlossaryScreen> {
+  WordFilter filterMode = WordFilter.all;
   String searchQuery = "";
   final searchController = TextEditingController();
 
@@ -32,6 +37,9 @@ class GlossaryScreenState extends State<GlossaryScreen> {
     if (await file.exists()) {
       final contents = await file.readAsString();
       final List<dynamic> jsonData = jsonDecode(contents);
+
+      if (!mounted) return;
+
       setState(() {
         words = jsonData.map((w) => Word.fromMap(w)).toList();
         words.sort(
@@ -39,6 +47,7 @@ class GlossaryScreenState extends State<GlossaryScreen> {
         );
       });
     } else {
+      if (!mounted) return;
       _showWelcomeDialog(file);
     }
   }
@@ -87,11 +96,46 @@ class GlossaryScreenState extends State<GlossaryScreen> {
   @override
   Widget build(BuildContext context) {
     final filteredWords = words.where((w) {
-      return w.term.toLowerCase().contains(searchQuery.toLowerCase());
+      final matchesSearch = w.term.toLowerCase().contains(
+        searchQuery.toLowerCase(),
+      );
+
+      bool matchesFilter;
+      switch (filterMode) {
+        case WordFilter.learned:
+          matchesFilter = w.isLearned;
+          break;
+        case WordFilter.toLearn:
+          matchesFilter = !w.isLearned;
+          break;
+        case WordFilter.all:
+        default:
+          matchesFilter = true;
+      }
+
+      return matchesSearch && matchesFilter;
     }).toList();
+
+    final totalCount = words.length;
+final learnedCount = words.where((w) => w.isLearned).length;
+final toLearnCount = totalCount - learnedCount;
+
+    Color backgroundColor;
+    switch (filterMode) {
+      case WordFilter.learned:
+        backgroundColor = Colors.green;
+        break;
+      case WordFilter.toLearn:
+        backgroundColor = Colors.deepOrange;
+        break;
+      case WordFilter.all:
+      default:
+        backgroundColor = Colors.lightBlue; // Bianco standard per "All"
+    }
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
+      backgroundColor: Colors.white,
       body: Column(
         children: [
           Padding(
@@ -121,98 +165,170 @@ class GlossaryScreenState extends State<GlossaryScreen> {
               },
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: filteredWords.length,
-              itemBuilder: (context, index) {
-                final word = filteredWords[index];
-                return ExpansionTile(
-                  title: Text(
-                    word.term,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
-                    ),
-                  ),
-
-                  subtitle: Text(word.description),
-
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 8.0,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Translation (IT): ${word.translation}",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-
-                          const Text(
-                            "Examples:",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const Divider(),
-
-                          ...word.examples.map(
-                            (ex) => Padding(
-                              padding: const EdgeInsets.only(bottom: 4.0),
-                              child: Text(
-                                "• $ex",
-                                style: const TextStyle(
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          const Divider(),
-
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton.icon(
-                                onPressed: () => showAddWordDialog(
-                                  word: word,
-                                  index: index,
-                                ), // Passiamo i dati
-                                icon: const Icon(
-                                  Icons.edit_outlined,
-                                  color: Colors.blue,
-                                ),
-                                label: const Text(
-                                  "Edit",
-                                  style: TextStyle(color: Colors.blue),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              TextButton.icon(
-                                onPressed: () => _confirmDelete(index),
-                                icon: const Icon(
-                                  Icons.delete_outline,
-                                  color: Colors.red,
-                                ),
-                                label: const Text(
-                                  "Delete",
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              },
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              children: [
+                WordFilterChip(
+                  label: 'All (${formatCount(totalCount)})',
+                  mode: WordFilter.all,
+                  selectedMode: filterMode,
+                  icon: Icons.list,
+                  onSelected: (newMode) => setState(() => filterMode = newMode),
+                ),
+                const SizedBox(width: 8),
+                WordFilterChip(
+                  label: 'Learned (${formatCount(learnedCount)})',
+                  mode: WordFilter.learned,
+                  selectedMode: filterMode,
+                  icon: Icons.check_circle,
+                  onSelected: (newMode) => setState(() => filterMode = newMode),
+                ),
+                const SizedBox(width: 8),
+                WordFilterChip(
+                  label: 'To Learn (${formatCount(toLearnCount)})',
+                  mode: WordFilter.toLearn,
+                  selectedMode: filterMode,
+                  icon: Icons.radio_button_unchecked,
+                  onSelected: (newMode) => setState(() => filterMode = newMode),
+                ),
+              ],
             ),
+          ),
+          Expanded(
+            child: Container(
+              color: backgroundColor.withAlpha(40), 
+              child: Material( // Aggiungi questo per forzare la trasparenza
+      color: Colors.transparent,
+              child: ListView.builder(
+                itemCount: filteredWords.length,
+                itemBuilder: (context, index) {
+                  final word = filteredWords[index];
+                  return ExpansionTile(
+                    backgroundColor: Colors.transparent,
+                    collapsedBackgroundColor: Colors.transparent,
+                    title: Text(
+                      word.term,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: word.isLearned
+                            ? Colors.green.shade700
+                            : Colors.deepOrange,
+                      ),
+                    ),
+
+                    subtitle: Text(word.description),
+
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 8.0,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Translation (IT): ${word.translation}",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+
+                            const Text(
+                              "Examples:",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const Divider(),
+
+                            ...word.examples.map(
+                              (ex) => Padding(
+                                padding: const EdgeInsets.only(bottom: 4.0),
+                                child: Text(
+                                  "• $ex",
+                                  style: const TextStyle(
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const Divider(),
+
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TextButton.icon(
+                                  onPressed: () {
+                                    setState(() {
+                                      word.isLearned =
+                                          !word.isLearned; // Inverte lo stato
+                                      saveToFile(
+                                        words,
+                                      ); // Salva subito sul JSON
+                                    });
+                                  },
+                                  icon: Icon(
+                                    word.isLearned
+                                        ? Icons.check_circle
+                                        : Icons.radio_button_unchecked,
+                                    color: word.isLearned
+                                        ? Colors.green
+                                        : Colors.grey,
+                                  ),
+                                  label: Text(
+                                    word.isLearned ? "Learned" : "To Learn",
+                                    style: TextStyle(
+                                      color: word.isLearned
+                                          ? Colors.green
+                                          : Colors.grey,
+                                      fontWeight: word.isLearned
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                TextButton.icon(
+                                  onPressed: () => showAddWordDialog(
+                                    word: word,
+                                    index: index,
+                                  ),
+                                  icon: const Icon(
+                                    Icons.edit_outlined,
+                                    color: Colors.blue,
+                                  ),
+                                  label: const Text(
+                                    "Edit",
+                                    style: TextStyle(color: Colors.blue),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                TextButton.icon(
+                                  onPressed: () => _confirmDelete(index),
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.red,
+                                  ),
+                                  label: const Text(
+                                    "Delete",
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
           ),
         ],
       ),
